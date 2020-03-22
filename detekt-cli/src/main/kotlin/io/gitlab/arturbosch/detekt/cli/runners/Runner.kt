@@ -41,4 +41,35 @@ class Runner(
             throw BuildFailure("Build failed with $amount weighted issues (threshold defined was $maxIssues).".red())
         }
     }
+
+    private inline fun <T> measure(block: () -> T): Pair<Long, T> {
+        val start = System.currentTimeMillis()
+        val result = block()
+        return System.currentTimeMillis() - start to result
+    }
+
+    private fun createSettings(): ProcessingSettings = with(arguments) {
+        val (configLoadTime, configuration) = measure { loadConfiguration() }
+        val (settingsLoadTime, settings) = measure {
+            ProcessingSettings(
+                inputPaths = inputPaths,
+                config = configuration,
+                pathFilters = createFilters(),
+                parallelCompilation = parallel,
+                autoCorrect = autoCorrect,
+                excludeDefaultRuleSets = disableDefaultRuleSets,
+                pluginPaths = createPlugins(),
+                classpath = createClasspath(),
+                languageVersion = languageVersion,
+                jvmTarget = jvmTarget,
+                debug = arguments.debug,
+                outPrinter = outputPrinter, errorPrinter = errorPrinter,
+                configUris = extractUris(),
+                workingDir = workingDir
+            )
+        }
+        settings.debug { "Loading config took $configLoadTime ms" }
+        settings.debug { "Creating settings took $settingsLoadTime ms" }
+        return settings
+    }
 }

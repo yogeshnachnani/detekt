@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutorService
 /**
  * Settings to be used by the detekt engine.
  *
- * Always close the settings as dispose the Kotlin compiler and detekt class loader.
+ * Always close the settings as this will dispose the Kotlin compiler and detekt class loader.
  * If using a custom executor service be aware that detekt won't shut it down after use!
  */
 @OptIn(UnstableApi::class)
@@ -43,8 +43,47 @@ class ProcessingSettings @Suppress("LongParameterList") constructor(
     override val errPrinter: PrintStream,
     val autoCorrect: Boolean = false,
     val debug: Boolean = false,
-    override val configUris: Collection<URI> = emptyList()
+    override val configUris: Collection<URI> = emptyList(),
+    val workingDir: Path? = null
 ) : AutoCloseable, Closeable, SetupContext {
+    /**
+     * Single project input path constructor.
+     */
+    constructor(
+        inputPath: Path,
+        config: Config = Config.empty,
+        pathFilters: PathFilters? = null,
+        parallelCompilation: Boolean = false,
+        excludeDefaultRuleSets: Boolean = false,
+        pluginPaths: List<Path> = emptyList(),
+        classpath: List<String> = emptyList(),
+        languageVersion: LanguageVersion = LanguageVersion.LATEST_STABLE,
+        jvmTarget: JvmTarget = JvmTarget.DEFAULT,
+        executorService: ExecutorService = ForkJoinPool.commonPool(),
+        outPrinter: PrintStream = System.out,
+        errorPrinter: PrintStream = System.err,
+        autoCorrect: Boolean = false,
+        debug: Boolean = false,
+        configUris: Collection<URI> = emptyList(),
+        workingDir: Path? = null
+    ) : this(
+        listOf(inputPath),
+        config,
+        pathFilters,
+        parallelCompilation,
+        excludeDefaultRuleSets,
+        pluginPaths,
+        classpath,
+        languageVersion,
+        jvmTarget,
+        executorService,
+        outPrinter,
+        errorPrinter,
+        autoCorrect,
+        debug,
+        configUris,
+        workingDir
+    )
 
     init {
         pluginPaths.forEach {

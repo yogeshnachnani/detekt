@@ -3,6 +3,7 @@ package io.gitlab.arturbosch.detekt.api
 import io.github.detekt.psi.absolutePath
 import io.gitlab.arturbosch.detekt.api.internal.BaseRule
 import io.gitlab.arturbosch.detekt.api.internal.PathFilters
+import io.gitlab.arturbosch.detekt.api.internal.relativePath
 import io.gitlab.arturbosch.detekt.api.internal.validateIdentifier
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -41,5 +42,5 @@ class RuleSet(val id: RuleSetId, val rules: List<BaseRule>) {
 
     @Suppress("DEPRECATION")
     private fun isFileIgnored(file: KtFile) =
-        pathFilters?.isIgnored(file.absolutePath()) == true
+        pathFilters?.isIgnored(Paths.get(file.relativePath())) == true
 }

@@ -23,6 +23,8 @@ open class KtCompiler(
         val relativePath =
             (if (root == subPath) subPath.fileName
             else root.fileName.resolve(root.relativize(subPath))).normalize()
+        require(subPath.isFile()) { "Given sub path ($subPath) should be a regular file!" }
+        val relativePath = relativize(root, subPath)
         val absolutePath = subPath.toAbsolutePath().normalize()
         val content = subPath.toFile().readText()
         val lineSeparator = content.determineLineSeparator()

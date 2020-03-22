@@ -21,7 +21,7 @@ class DslGradleRunner @Suppress("LongParameterList") constructor(
 
     private val settingsContent = """
         |rootProject.name = "rootDir-project"
-        |include(${projectLayout.submodules.map { "\"${it.name}\"" }.joinToString(",")})
+        |include(${projectLayout.submodules.joinToString(",") { "\"${it.name}\"" }})
         |
         """.trimMargin()
 
@@ -59,7 +59,8 @@ class DslGradleRunner @Suppress("LongParameterList") constructor(
         projectLayout.srcDirs.forEachIndexed { srcDirIdx, sourceDir ->
             repeat(projectLayout.numberOfSourceFilesInRootPerSourceDir) {
                 val withCodeSmell =
-                    srcDirIdx * projectLayout.numberOfSourceFilesInRootPerSourceDir + it < projectLayout.numberOfCodeSmellsInRootPerSourceDir
+                    srcDirIdx * projectLayout.numberOfSourceFilesInRootPerSourceDir +
+                        it < projectLayout.numberOfCodeSmellsInRootPerSourceDir
                 writeKtFile(File(rootDir, sourceDir), "MyRoot${it}Class", withCodeSmell)
             }
         }

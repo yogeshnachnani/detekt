@@ -9,7 +9,8 @@ import io.gitlab.arturbosch.detekt.api.RuleId
 import io.gitlab.arturbosch.detekt.api.RuleSet
 import io.gitlab.arturbosch.detekt.api.RuleSetId
 import io.gitlab.arturbosch.detekt.api.internal.BaseRule
-import io.gitlab.arturbosch.detekt.api.internal.createPathFilters
+import io.gitlab.arturbosch.detekt.api.internal.PathFilters
+import io.gitlab.arturbosch.detekt.api.internal.relativePath
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
 
@@ -19,6 +20,23 @@ fun Config.isActive(): Boolean =
 fun Config.shouldAnalyzeFile(file: KtFile): Boolean {
     val filters = createPathFilters()
     return filters == null || !filters.isIgnored(file.absolutePath())
+fun RuleSetProvider.createRuleSet(config: Config): RuleSet =
+    instance(config.subConfig(ruleSetId))
+
+fun RuleSet.shouldAnalyzeFile(file: KtFile, config: Config): Boolean {
+    fun filters(): PathFilters? {
+        val subConfig = config.subConfig(id)
+        val includes = subConfig.valueOrNull<String>(Config.INCLUDES_KEY)?.trim()
+        val excludes = subConfig.valueOrNull<String>(Config.EXCLUDES_KEY)?.trim()
+        return PathFilters.of(includes, excludes)
+    }
+
+    val filters = filters()
+    if (filters != null) {
+        val path = Paths.get(file.relativePath())
+        return !filters.isIgnored(path)
+    }
+    return true
 }
 
 fun RuleSet.visitFile(

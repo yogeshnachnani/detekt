@@ -11,6 +11,8 @@ class KtTreeCompiler(
     private val compiler: KtCompiler = KtCompiler(settings.environment)
 ) {
 
+    private val workingDir = settings.workingDir
+
     companion object {
         val KT_ENDINGS = setOf("kt", "kts")
         fun instance(settings: ProcessingSettings): KtTreeCompiler = KtTreeCompiler(settings)
@@ -19,7 +21,7 @@ class KtTreeCompiler(
     fun compile(path: Path): List<KtFile> {
         require(Files.exists(path)) { "Given path $path does not exist!" }
         return when {
-            path.isFile() && path.isKotlinFile() -> listOf(compiler.compile(path, path))
+            path.isFile() && path.isKotlinFile() -> listOf(compiler.compile(workingDir ?: path, path))
             path.isDirectory() -> compileProject(path)
             else -> {
                 settings.info("Ignoring a file detekt cannot handle: $path")
@@ -32,16 +34,16 @@ class KtTreeCompiler(
         val kotlinFiles = Files.walk(project)
             .filter(Path::isFile)
             .filter { it.isKotlinFile() }
-            .filter { !isIgnored(it) }
+            .filter { !isIgnored(project, it) }
         return if (settings.parallelCompilation) {
             val service = settings.taskPool
             val tasks = kotlinFiles.map { path ->
-                service.task { compiler.compile(project, path) }
+                service.task { compiler.compile(workingDir ?: project, path) }
                     .recover { settings.error("Could not compile '$path'.", it); null }
             }.collect(Collectors.toList())
-            return awaitAll(tasks).filterNotNull()
+            awaitAll(tasks).filterNotNull()
         } else {
-            kotlinFiles.map { compiler.compile(project, it) }.collect(Collectors.toList())
+            kotlinFiles.map { compiler.compile(workingDir ?: project, it) }.collect(Collectors.toList())
         }
     }
 
@@ -51,5 +53,8 @@ class KtTreeCompiler(
         return kotlinEnding in KT_ENDINGS
     }
 
-    private fun isIgnored(path: Path): Boolean = settings.pathFilters?.isIgnored(path) ?: false
+    private fun isIgnored(project: Path, subPath: Path): Boolean {
+        val filters = settings.pathFilters ?: return false
+        return filters.isIgnored(relativize(project, subPath))
+    }
 }
