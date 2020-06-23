@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.resolve.typeBinding.createTypeBindingForReturnType
  * val isEnabled: Boolean = false
  * </compliant>
  */
-class IsPropertyNaming(config: Config = Config.empty) : Rule(config) {
+class NonBooleanPropertyPrefixedWithIs(config: Config = Config.empty) : Rule(config) {
 
     private val kotlinBooleanTypeName = "kotlin.Boolean"
     private val javaBooleanTypeName = "java.lang.Boolean"

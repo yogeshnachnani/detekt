@@ -377,15 +377,15 @@ naming:
   InvalidPackageDeclaration:
     active: false
     rootPackage: ''
-  IsPropertyNaming:
-    active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   MatchingDeclarationName:
     active: true
     mustBeFirst: true
   MemberNameEqualsClassName:
     active: true
     ignoreOverridden: true
+  NonBooleanPropertyPrefixedWithIs:
+    active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   ObjectPropertyNaming:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
